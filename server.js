@@ -5,18 +5,19 @@ const server = express();
 
 //-----middleware stack-----
 server.use(express.json())
-
+server.use(logger);
 
 //-----custom middleware!-----
-//logger middleware
+//logger middleware -- global / will check EVERY request
 function logger(req, res, next) {
   console.log(`LOGGER: ${req.method} request to ${req.originalUrl}`)
   next()
 }
 
 
+
 //-----routes-----
-server.get('/', logger, (req, res) => {
+server.get('/', (req, res) => {
   res.send(`<h2>Let's write some middleware!</h2>`);
 });
 
