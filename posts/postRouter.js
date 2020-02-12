@@ -1,10 +1,20 @@
 const express = require('express');
-
+const Posts = require('./postDb');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  // do your magic!
+  Posts.get()
+  .then(posts => {
+    posts 
+      ? res.status(200).json(posts) 
+      : res.status(404).json({error: "Fellowship not found"})
+  })
+  .catch(err => {
+    console.log(err)
+    res.status(500).json({error: "Error on our side, sorry"})
+  })
 });
+// verified
 
 router.get('/:id', (req, res) => {
   // do your magic!
