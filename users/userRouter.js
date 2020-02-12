@@ -2,13 +2,6 @@ const express = require('express');
 const Users = require('./userDb');
 const router = express.Router();
 
-router.post('/', (req, res) => {
-  // do your magic!
-});
-
-router.post('/:id/posts', (req, res) => {
-  // do your magic!
-});
 
 router.get('/', (req, res) => {
   Users.get()
@@ -24,28 +17,88 @@ router.get('/', (req, res) => {
 });
 // verified
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
+  const user = req.user;
+  res.status(200).json(user)
+});
+// verified
+
+router.get('/:id/posts', validateUserId, (req, res) => {
+  const user = req.user;
+  Users.getUserPosts(user.id)
+    .then(posts => {
+      res.status(200).json(posts);
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: "Error on our side, sorry"})
+    })
+});
+// verified
+
+router.post('/', (req, res) => {
   // do your magic!
 });
 
-router.get('/:id/posts', (req, res) => {
+router.post('/:id/posts', (req, res) => {
   // do your magic!
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
-});
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.delete('/:id', validateUserId, (req, res) => {
+  const user = req.user;
+
+  Users.remove(user.id)
+    .then(removedUser => {
+      removedUser === 1
+      ? res.status(200).json(removedUser) 
+      : res.status(404).json({ message: "That user doesn't exist" })
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: "Error on our side, sorry"})
+    })
 });
+// verified
+
+router.put('/:id', validateUserId, (req, res) => {
+  const user = req.user;
+  const payload = req.body;
+
+  if(payload.name){
+    Users.update(user.id, payload)
+      .then(updatedUser => {
+        res.status(200).json(payload)
+      })
+      .catch(err => {
+        console.log(err)
+        res.status(500).json({error: "Error on our side, sorry"})
+      })
+  } else {
+    res.status(400).json({error: "Please include the name"})
+  }
+});
+// verified
 
 //custom middleware
 
+//used to valid an id everytime a req is made with an id
 function validateUserId(req, res, next) {
-  // do your magic!
+  const {id} = req.params;
+  Users.getById(id)
+  .then(user => {
+    req.user = user
+    user === undefined
+      ? res.status(404).json({error: "User not found"})
+      : next()
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: "Error on our side, sorry"})
+    })
 }
 
+//used to validate the body on a req to create new user
 function validateUser(req, res, next) {
   // do your magic!
 }
