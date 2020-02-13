@@ -16,22 +16,54 @@ router.get('/', (req, res) => {
 });
 // verified
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+router.get('/:id', validatePostId, (req, res) => {
+  res.status(200).json(req.post);
 });
+// verified via middleware
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+router.delete('/:id', validatePostId, (req, res) => {
+  Posts.remove(req.post.id)
+    .then(() => {
+      res.status(200).json(req.post);
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: "Error on our side, sorry"})
+    })
 });
+// verified
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.put('/:id', validatePostId, (req, res) => {
+  const id = req.post.id;
+  const body = req.body;
+
+  Posts.update(id, body)
+    .then(() => {
+      res.status(200).json(body);
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: "Error on our side, sorry"})
+    })
 });
+// verified
 
 // custom middleware
 
 function validatePostId(req, res, next) {
-  // do your magic!
+  const {id} = req.params;
+
+  Posts.getById(id)
+    .then(post => {
+      req.post = post
+      post === undefined
+      ? res.status(404).json({error: "Not found by that id"})
+      : next()
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: "Error on our side, sorry"})
+    })
 }
 
 module.exports = router;

@@ -124,7 +124,7 @@ function validateUser(req, res, next) {
 
 };
 
-//valids the body on req 
+// valids the body on req 
 // if missing body 400 missing data 
 // if body text missing 400 missing text
 function validatePost(req, res, next) {
