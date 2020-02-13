@@ -3,11 +3,13 @@ const express = require('express');
 const server = express();
 const userRouter = require('./users/userRouter');
 const postRouter = require('./posts/postRouter');
+const cors = require('cors');
 
 
 //-----middleware stack-----
 server.use(express.json())
 server.use(logger);
+server.use(cors());
 
 //-----custom middleware-----
 //logger middleware -- global / will check EVERY request
