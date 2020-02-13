@@ -1,5 +1,6 @@
 const express = require('express');
 const Users = require('./userDb');
+const Posts = require('../posts/postDb');
 const router = express.Router();
 
 
@@ -41,9 +42,10 @@ router.post('/', validateUser, (req, res) => {
 });
 // verified
 
-router.post('/:id/posts', (req, res) => {
-  // do your magic!
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+  res.status(201).json(req.post);
 });
+// verified
 
 
 router.delete('/:id', validateUserId, (req, res) => {
@@ -104,11 +106,11 @@ function validateUser(req, res, next) {
   const payload = req.body;
   console.log(payload)
 
-  if(payload.name === ''){
-    res.status(401).json({message: "Missing user name"});
-  } else if(!payload.name){
-    res.status(401).json({message: "missing user data"})
-  }else{
+  if (payload.name === '') {
+    res.status(401).json({ message: "Missing user name" });
+  } else if (!payload.name) {
+    res.status(401).json({ message: "missing user data" })
+  } else {
     Users.insert(payload)
       .then(user => {
         req.body = user;
@@ -119,11 +121,26 @@ function validateUser(req, res, next) {
         res.status(500).json({ error: "Error on our side, sorry" });
       });
   }
-  
+
 };
 
+//valids the body on req 
+// if missing body 400 missing data 
+// if body text missing 400 missing text
 function validatePost(req, res, next) {
-  // do your magic!
+  const { id } = req.params;
+  const payload = { ...req.body, user_id: id }
+
+  Posts.insert(payload)
+    .then(post => {
+      req.post = post;
+      next();
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({ error: "Error on our side, sorry" })
+    })
+
 }
 
 module.exports = router;
